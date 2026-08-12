@@ -76,9 +76,6 @@ Edit `config.json` with your settings:
 
 ```json
 {
-  "twitch": {
-    "channelUserId": "YOUR_CHANNEL_USER_ID"
-  },
   "llm": {
     "baseUrl": "http://0.0.0.0:8099/v1",
     "apiKey": "no-key",
@@ -98,8 +95,6 @@ Edit `config.json` with your settings:
 }
 ```
 
-> 🔑 **How to find your Channel User ID:** Visit [twitchapps.com/tmi](https://twitchapps.com/tmi/) and enter your channel name.
-
 ### Run it
 
 ```bash
@@ -117,12 +112,6 @@ On first run, Lexis will display a **Device Code** — open the URL in your brow
 ## ⚙️ Configuration Reference
 
 All configurable parameters for `config.json`:
-
-### Twitch Settings
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `twitch.channelUserId` | string | — | The User ID of the channel to join (required) |
 
 ### LLM Settings
 
@@ -166,7 +155,6 @@ Environment variables override `config.json` values:
 | Variable | Overrides |
 |----------|-----------|
 | `TWITCH_CLIENT_ID` | Default Twitch Client ID (for forks) |
-| `TWITCH_CHANNEL_USER_ID` | `twitch.channelUserId` |
 | `LLM_BASE_URL` | `llm.baseUrl` |
 | `LLM_API_KEY` | `llm.apiKey` |
 | `LLM_MODEL` | `llm.model` |
