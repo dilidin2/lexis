@@ -1,0 +1,21 @@
+{
+  "twitch": {
+    "channelUserId": "CHANNEL_USER_ID"
+  },
+  "llm": {
+    "baseUrl": "http://0.0.0.0:8099",
+    "apiKey": "dummy",
+    "model": "qwen",
+    "temperature": 0.7,
+    "maxTokens": 20000,
+    "timeout": 30000
+  },
+  "bot": {
+    "commandPrefix": "!bot",
+    "maxResponseLength": 400,
+    "rateLimitMs": 2000,
+    "shortTermMemorySize": 20,
+    "longTermMemoryInterval": 50,
+    "systemPromptFile": "friendly"
+  }
+}

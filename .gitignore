@@ -1,0 +1,8 @@
+node_modules/
+dist/
+broadcaster_tokens.json
+bot_tokens.json
+MEMORY.md
+short_term_memory.json
+config.local.json
+*.log

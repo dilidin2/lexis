@@ -1,0 +1,33 @@
+{
+  "name": "lexis",
+  "version": "1.0.0",
+  "description": "AI-powered Twitch chat bot with memory and personality",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "test": "jest",
+    "test:integration": "jest --config jest.integration.config.js"
+  },
+  "keywords": [
+    "twitch",
+    "bot",
+    "ai",
+    "llm",
+    "chat"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.10.5",
+    "@types/ws": "^8.5.13",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
+  }
+}
