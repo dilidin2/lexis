@@ -157,8 +157,9 @@ async function main(): Promise<void> {
   const helix = new HelixClient(broadcasterTokens, botTokens);
   const commandHandler = new CommandHandler(config, llm, shortTermMemory, longTermMemory, helix);
 
-  // Setup EventSub WebSocket
-  const websocket = new EventSubWebSocket(broadcasterTokens, botTokens);
+  // Setup EventSub WebSocket (sharing the same HelixClient so token
+  // refreshes happen in exactly one place)
+  const websocket = new EventSubWebSocket(broadcasterTokens, helix);
   websocket.setOnMessageCallback((event) => {
     commandHandler.handleEvent(event);
   });

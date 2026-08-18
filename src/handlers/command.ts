@@ -101,12 +101,23 @@ export class CommandHandler {
       const queued = this.commandQueue.shift();
       if (!queued) break;
 
-      await this.processCommand(queued.event);
+      try {
+        await this.processCommand(queued.event);
+      } catch (error) {
+        // A single bad command must never take the whole bot down
+        // (this method is fire-and-forget; an uncaught error here would
+        // become an unhandled rejection and crash the process).
+        console.error(`[ERROR] Failed to process command from ${queued.event.chatter_user_login}: ${error}`);
+      }
       this.isProcessing = false;
 
       // Check if consolidation is needed after each command
       if (this.shortTermMemory.shouldConsolidate(this.config.bot.longTermMemoryInterval)) {
-        await this.runConsolidation();
+        try {
+          await this.runConsolidation();
+        } catch (error) {
+          console.error(`[ERROR] Memory consolidation failed: ${error}`);
+        }
       }
     }
   }

@@ -1,5 +1,4 @@
 import WebSocket from 'ws';
-import { getTwitchClientId } from '../config';
 import { TokenData } from '../auth/tokens';
 import { HelixClient } from './helix';
 
@@ -36,8 +35,12 @@ export class EventSubWebSocket {
   private isConnecting = false;
   private isConnectingBot = false;
 
-  constructor(broadcasterTokens: TokenData, botTokens: TokenData) {
-    this.helix = new HelixClient(broadcasterTokens, botTokens);
+  // A single shared HelixClient must be used across the whole process:
+  // Twitch rotates refresh tokens on every refresh, and two independent
+  // instances would each refresh the same refresh token, invalidating the
+  // other one.
+  constructor(broadcasterTokens: TokenData, helix: HelixClient) {
+    this.helix = helix;
     this.broadcasterUserId = broadcasterTokens.user_id;
   }
 
