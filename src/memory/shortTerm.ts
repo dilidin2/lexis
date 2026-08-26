@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { BotConfig } from '../config';
+import { logger } from '../logger';
 
 export interface ShortTermMemoryEntry {
   username: string;
@@ -19,8 +20,6 @@ export class ShortTermMemory {
   private entries: ShortTermMemoryEntry[] = [];
   private consolidationCounter: number = 0;
   private maxSize: number;
-  private saveTimeout: NodeJS.Timeout | null = null;
-  private readonly SAVE_DEBOUNCE_MS = 5000;
 
   constructor(config: BotConfig) {
     this.maxSize = config.shortTermMemorySize;
@@ -34,10 +33,10 @@ export class ShortTermMemory {
         const data = JSON.parse(content) as ShortTermMemoryData;
         this.entries = data.entries ?? [];
         this.consolidationCounter = data.consolidationCounter ?? 0;
-        console.log(`[INFO] Loaded ${this.entries.length} short-term memory entries, counter: ${this.consolidationCounter}`);
+        logger.info(`Loaded ${this.entries.length} short-term memory entries, counter: ${this.consolidationCounter}`);
       }
     } catch (error) {
-      console.error(`[ERROR] Failed to load short-term memory: ${error}`);
+      logger.error(`Failed to load short-term memory: ${error}`);
       this.entries = [];
       this.consolidationCounter = 0;
     }
@@ -51,18 +50,8 @@ export class ShortTermMemory {
       };
       fs.writeFileSync(MEMORY_FILE, JSON.stringify(data, null, 2), 'utf-8');
     } catch (error) {
-      console.error(`[ERROR] Failed to save short-term memory: ${error}`);
+      logger.error(`Failed to save short-term memory: ${error}`);
     }
-  }
-
-  private debouncedSave(): void {
-    if (this.saveTimeout) {
-      clearTimeout(this.saveTimeout);
-    }
-    this.saveTimeout = setTimeout(() => {
-      this.save();
-      this.saveTimeout = null;
-    }, this.SAVE_DEBOUNCE_MS);
   }
 
   addEntry(username: string, userMessage: string, botResponse: string): void {
@@ -80,12 +69,12 @@ export class ShortTermMemory {
     }
 
     this.consolidationCounter++;
-    this.debouncedSave();
+    this.save();
   }
 
   incrementCounter(): void {
     this.consolidationCounter++;
-    this.debouncedSave();
+    this.save();
   }
 
   resetCounter(): void {
@@ -124,10 +113,6 @@ export class ShortTermMemory {
   }
 
   flush(): void {
-    if (this.saveTimeout) {
-      clearTimeout(this.saveTimeout);
-      this.saveTimeout = null;
-    }
     this.save();
   }
 }
