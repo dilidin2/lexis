@@ -88,6 +88,9 @@ Edit `config.json` with your settings:
     "commandPrefix": "!bot",
     "maxResponseLength": 400,
     "rateLimitMs": 2000,
+    "userCooldownMs": 5000,
+    "maxRequestsPerWindow": 6,
+    "windowMs": 60000,
     "shortTermMemorySize": 20,
     "longTermMemoryInterval": 50,
     "systemPromptFile": "friendly"
@@ -131,7 +134,12 @@ All configurable parameters for `config.json`:
 | `bot.commandPrefix` | string | `!bot` | Command prefix to trigger the bot |
 | `bot.maxResponseLength` | number | `400` | Max characters per response (Twitch limit: 500) |
 | `bot.rateLimitMs` | number | `2000` | Minimum ms between bot responses |
+| `bot.userCooldownMs` | number | `5000` | Per-user cooldown: a user can't fire another command within this window |
+| `bot.maxRequestsPerWindow` | number | `6` | Max LLM calls per rolling window, globally (throttles the inference server) |
+| `bot.windowMs` | number | `60000` | Size of the rate-limit window in ms |
 | `bot.shortTermMemorySize` | number | `20` | Number of recent interactions to remember |
+
+> **Note on rate limiting:** if the global window is full, new commands are **dropped** (and logged), not queued — this keeps a spam burst from piling up a long backlog of LLM calls. The defaults are tuned for a local LLM (roughly one call every 10s sustained); raise `maxRequestsPerWindow` if your GPU can take more.
 | `bot.longTermMemoryInterval` | number | `50` | Interactions between long-term memory consolidation |
 | `bot.systemPromptFile` | string | `friendly` | Personality preset (see below) |
 

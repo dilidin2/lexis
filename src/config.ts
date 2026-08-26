@@ -20,6 +20,9 @@ export interface BotConfig {
   commandPrefix: string;
   maxResponseLength: number;
   rateLimitMs: number;
+  userCooldownMs: number;
+  maxRequestsPerWindow: number;
+  windowMs: number;
   shortTermMemorySize: number;
   longTermMemoryInterval: number;
   systemPromptFile: string;
@@ -61,6 +64,9 @@ export function loadConfig(): Config {
       commandPrefix: fileConfig.bot?.commandPrefix ?? '!bot',
       maxResponseLength: fileConfig.bot?.maxResponseLength ?? 400,
       rateLimitMs: fileConfig.bot?.rateLimitMs ?? 2000,
+      userCooldownMs: fileConfig.bot?.userCooldownMs ?? 5000,
+      maxRequestsPerWindow: fileConfig.bot?.maxRequestsPerWindow ?? 6,
+      windowMs: fileConfig.bot?.windowMs ?? 60000,
       shortTermMemorySize: fileConfig.bot?.shortTermMemorySize ?? 20,
       longTermMemoryInterval: fileConfig.bot?.longTermMemoryInterval ?? 50,
       systemPromptFile: process.env.SYSTEM_PROMPT_FILE ?? fileConfig.bot?.systemPromptFile ?? 'friendly',
