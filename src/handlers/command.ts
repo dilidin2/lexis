@@ -27,6 +27,9 @@ export class CommandHandler {
   private helix: HelixClient;
   private lastResponseTime: number = 0;
   private userCooldowns: UserCooldowns = {};
+  // Whether we already replied "in cooldown for X seconds" for the user's
+  // current cooldown window (so spamming !bot doesn't re-send it)
+  private cooldownAnnounced: { [userId: string]: boolean } = {};
   private globalLimiter: RollingWindowRateLimiter;
   private commandQueue: QueuedCommand[] = [];
   private isProcessing = false;
@@ -73,11 +76,17 @@ export class CommandHandler {
     // Check per-user cooldown
     const now = Date.now();
     const userCooldownMs = this.config.bot.userCooldownMs;
-    if (this.userCooldowns[userId] && now - this.userCooldowns[userId] < userCooldownMs) {
+    // Note: use !== undefined (not truthiness) so a stored timestamp of 0
+    // is still treated as a valid cooldown
+    if (this.userCooldowns[userId] !== undefined && now - this.userCooldowns[userId] < userCooldownMs) {
       const remaining = userCooldownMs - (now - this.userCooldowns[userId]);
+      this.announceCooldownOnce(userId, username, remaining);
       logger.cooldownHit(username, remaining);
       return;
     }
+
+    // Cooldown expired: allow the next cooldown window to announce again
+    this.cooldownAnnounced[userId] = false;
 
     // Check message length
     if (userMessage.length > 400) {
@@ -86,8 +95,9 @@ export class CommandHandler {
     }
 
     // Check global LLM rate limit (protects the local GPU from spam)
-    const windowWaitMs = this.globalLimiter.waitTime(now);
-    if (windowWaitMs > 0) {
+    // tryAcquire() must be used (not just waitTime()) so accepted requests
+    // are actually recorded; otherwise the window never fills up
+    if (!this.globalLimiter.tryAcquire(now)) {
       // Still apply the per-user cooldown so it can't be retried right away,
       // and drop the request instead of queueing it up into a long GPU grind
       this.userCooldowns[userId] = now;
@@ -112,6 +122,34 @@ export class CommandHandler {
     // Queue the command for processing
     this.enqueueCommand(event);
     this.processQueue();
+  }
+
+  /**
+   * Tell a user (once per cooldown window) how long they must wait.
+   * Repeated !bot while on cooldown is logged but never answered again,
+   * so it can't be used as a "how many seconds left?" poll.
+   */
+  private announceCooldownOnce(userId: string, username: string, remainingMs: number): void {
+    if (this.cooldownAnnounced[userId]) {
+      return;
+    }
+
+    const remainingSec = Math.ceil(remainingMs / 1000);
+    // Mark before sending to avoid duplicate replies on fast repeated
+    // commands; if the send fails, undo it so the next attempt can retry
+    this.cooldownAnnounced[userId] = true;
+
+    void this.helix
+      .sendMessage(
+        this.config.twitch.channelUserId,
+        this.helix.getBotUserId(),
+        `@${username}, the bot is in cooldown for ${remainingSec} seconds!`
+      )
+      .then((sent) => {
+        if (!sent) {
+          this.cooldownAnnounced[userId] = false;
+        }
+      });
   }
 
   private enqueueCommand(event: ChatMessageEvent): void {

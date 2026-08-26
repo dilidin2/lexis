@@ -64,7 +64,7 @@ export function loadConfig(): Config {
       commandPrefix: fileConfig.bot?.commandPrefix ?? '!bot',
       maxResponseLength: fileConfig.bot?.maxResponseLength ?? 400,
       rateLimitMs: fileConfig.bot?.rateLimitMs ?? 2000,
-      userCooldownMs: fileConfig.bot?.userCooldownMs ?? 5000,
+      userCooldownMs: fileConfig.bot?.userCooldownMs ?? 15000,
       maxRequestsPerWindow: fileConfig.bot?.maxRequestsPerWindow ?? 6,
       windowMs: fileConfig.bot?.windowMs ?? 60000,
       shortTermMemorySize: fileConfig.bot?.shortTermMemorySize ?? 20,
