@@ -5,6 +5,8 @@ import { LongTermMemory } from '../memory/longTerm';
 import { loadSystemPrompt, buildFullSystemPrompt } from '../prompts/loader';
 import { HelixClient } from '../twitch/helix';
 import { ChatMessageEvent } from '../twitch/websocket';
+import { logger, MemoryFileStats } from '../logger';
+import { RollingWindowRateLimiter } from '../rateLimiter';
 
 interface QueuedCommand {
   event: ChatMessageEvent;
@@ -25,6 +27,7 @@ export class CommandHandler {
   private helix: HelixClient;
   private lastResponseTime: number = 0;
   private userCooldowns: UserCooldowns = {};
+  private globalLimiter: RollingWindowRateLimiter;
   private commandQueue: QueuedCommand[] = [];
   private isProcessing = false;
   private isConsolidating = false;
@@ -43,11 +46,15 @@ export class CommandHandler {
     this.shortTermMemory = shortTermMemory;
     this.longTermMemory = longTermMemory;
     this.helix = helix;
+    this.globalLimiter = new RollingWindowRateLimiter(
+      config.bot.maxRequestsPerWindow,
+      config.bot.windowMs
+    );
     this.personalityPrompt = loadSystemPrompt(config.bot.systemPromptFile);
     // Remove leading ! or / from configured prefix so we can prepend [!/] in the regex
     const prefix = config.bot.commandPrefix.replace(/^[!\/]/, '');
     this.commandPattern = new RegExp(`^[!/]${prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s+(.+)$`, 'i');
-    console.log(`[INFO] Command pattern: ${this.commandPattern}`);
+    logger.info(`Command pattern: ${this.commandPattern}`);
   }
 
   handleEvent(event: ChatMessageEvent): void {
@@ -58,10 +65,38 @@ export class CommandHandler {
 
     const userMessage = match[1].trim();
     const userId = event.chatter_user_id;
+    const username = event.chatter_user_login;
+
+    // Log received message
+    logger.chatMessage(username, userMessage, event.message_id);
 
     // Check per-user cooldown
     const now = Date.now();
-    if (this.userCooldowns[userId] && now - this.userCooldowns[userId] < 5000) {
+    const userCooldownMs = this.config.bot.userCooldownMs;
+    if (this.userCooldowns[userId] && now - this.userCooldowns[userId] < userCooldownMs) {
+      const remaining = userCooldownMs - (now - this.userCooldowns[userId]);
+      logger.cooldownHit(username, remaining);
+      return;
+    }
+
+    // Check message length
+    if (userMessage.length > 400) {
+      logger.messageRejected(username, 'Message too long', `${userMessage.length}/400 chars`);
+      return;
+    }
+
+    // Check global LLM rate limit (protects the local GPU from spam)
+    const windowWaitMs = this.globalLimiter.waitTime(now);
+    if (windowWaitMs > 0) {
+      // Still apply the per-user cooldown so it can't be retried right away,
+      // and drop the request instead of queueing it up into a long GPU grind
+      this.userCooldowns[userId] = now;
+      logger.rateLimited(
+        username,
+        this.globalLimiter.pending(now),
+        this.globalLimiter.maxRequests,
+        this.globalLimiter.windowMs
+      );
       return;
     }
 
@@ -81,7 +116,7 @@ export class CommandHandler {
 
   private enqueueCommand(event: ChatMessageEvent): void {
     if (this.commandQueue.length >= MAX_QUEUE_SIZE) {
-      console.warn('[WARN] Command queue full, dropping oldest command');
+      logger.warn('Command queue full, dropping oldest command');
       this.commandQueue.shift();
     }
 
@@ -159,10 +194,19 @@ export class CommandHandler {
     // Add current message
     messages.push({ role: 'user', content: `${username}: ${userMessage}` });
 
+    // Check context size (rough estimate: ~4 chars per token)
+    const totalChars = messages.reduce((sum, m) => sum + (m.content?.length ?? 0), 0);
+    const estimatedTokens = Math.round(totalChars / 4);
+    const maxTokens = 128000; // typical context window
+    const contextPercent = (estimatedTokens / maxTokens) * 100;
+    if (contextPercent > 75) {
+      logger.contextWarning(estimatedTokens, maxTokens, contextPercent);
+    }
+
     // Call LLM
     const rawResponse = await this.llm.chatCompletion(messages);
     if (!rawResponse) {
-      console.warn('[WARN] LLM returned no response, skipping command');
+      logger.messageRejected(username, 'LLM returned no response');
       return;
     }
 
@@ -179,6 +223,9 @@ export class CommandHandler {
     if (sent) {
       this.lastResponseTime = Date.now();
       this.shortTermMemory.addEntry(username, userMessage, response);
+      logger.llmResponse(username, response);
+    } else {
+      logger.messageRejected(username, 'Failed to send response');
     }
   }
 
@@ -196,6 +243,7 @@ export class CommandHandler {
     // Truncate if needed
     const maxLength = this.config.bot.maxResponseLength;
     if (response.length > maxLength) {
+      const originalLength = response.length;
       response = response.substring(0, maxLength);
       // Don't end mid-word
       const lastSpace = response.lastIndexOf(' ');
@@ -203,21 +251,43 @@ export class CommandHandler {
         response = response.substring(0, lastSpace);
       }
       response = response.trim() + '...';
+      logger.responseTruncated(originalLength, response.length, `exceeded ${maxLength} char limit`);
     }
 
     return response;
   }
 
   private async runConsolidation(): Promise<void> {
+    interface ConsolidationResult {
+      saved: boolean;
+      entriesSaved: number;
+      fileStats: MemoryFileStats | undefined;
+    }
+
+    this.isConsolidating = true;
     this.isConsolidating = true;
     const queuedCount = this.commandQueue.length;
-    console.log(`[INFO] Memory consolidation started, queuing incoming commands`);
+    const entriesCount = this.shortTermMemory.getEntries().length;
+    const counter = this.shortTermMemory.getConsolidationCounter();
+    const interval = this.config.bot.longTermMemoryInterval;
 
-    await this.longTermMemory.consolidate(this.shortTermMemory);
+    logger.memoryConsolidationStart(entriesCount, counter, interval);
+
+    const startTime = Date.now();
+    const result: ConsolidationResult = await this.longTermMemory.consolidate(this.shortTermMemory);
+    const durationMs = Date.now() - startTime;
 
     this.isConsolidating = false;
-    console.log(`[INFO] Memory consolidation complete, processing ${queuedCount} queued commands`);
+    logger.memoryConsolidationEnd(
+      result.saved,
+      result.entriesSaved,
+      durationMs,
+      result.fileStats
+    );
 
+    if (queuedCount > 0) {
+      logger.info(`Processing ${queuedCount} queued commands`);
+    }
     this.processQueue();
   }
 

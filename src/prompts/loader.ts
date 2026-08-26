@@ -40,9 +40,20 @@ export function buildFullSystemPrompt(
   }
 
   parts.push('');
-  parts.push('You are responding in a Twitch chat. The user who sent this command is');
-  parts.push('identified by their username. Keep your response under ' + maxResponseLength + ' characters.');
+  parts.push('=== CHAT CONTEXT RULES ===');
+  parts.push('You are Lexis, responding live in a Twitch chat with many different users.');
+  parts.push('In the conversation history, each message is prefixed like "username: message".');
+  parts.push('This prefix is metadata showing who sent the message — it is NOT part of what');
+  parts.push('they said, and you must never write your own replies with a "Lexis:" prefix.');
+  parts.push('Different messages may come from different users; do not assume they are the');
+  parts.push('same person, and never speak as if you were one of the chat users. Never write');
+  parts.push('messages on their behalf or imitate their voice.');
+  parts.push('');
+  parts.push('Always start your reply by addressing the current user as @username (using');
+  parts.push('their exact username, no "the user" or other placeholder).');
+  parts.push('Keep your response under ' + maxResponseLength + ' characters.');
   parts.push('Do not use markdown formatting in your response.');
+  parts.push('=== END CHAT CONTEXT RULES ===');
 
   return parts.join('\n');
 }
