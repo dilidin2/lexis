@@ -8,6 +8,7 @@ import { LLMClient } from './llm/client';
 import { ShortTermMemory } from './memory/shortTerm';
 import { LongTermMemory } from './memory/longTerm';
 import { CommandHandler } from './handlers/command';
+import { AutonomyManager } from './autonomy/autonomy';
 
 interface ParsedArgs {
   bot: boolean;
@@ -108,9 +109,14 @@ async function ensureBotAuth(): Promise<TokenData> {
   }
 }
 
-function setupGracefulShutdown(commandHandler: CommandHandler, websocket: EventSubWebSocket): void {
+function setupGracefulShutdown(
+  commandHandler: CommandHandler,
+  websocket: EventSubWebSocket,
+  autonomy: AutonomyManager
+): void {
   const shutdown = async (signal: string) => {
     console.log(`\n[INFO] Received ${signal}, shutting down gracefully...`);
+    autonomy.stop();
     commandHandler.flush();
     websocket.disconnect();
     process.exit(0);
@@ -157,6 +163,17 @@ async function main(): Promise<void> {
   const helix = new HelixClient(broadcasterTokens, botTokens);
   const commandHandler = new CommandHandler(config, llm, shortTermMemory, longTermMemory, helix);
 
+  // Setup autonomy (periodic self-initiated participation in chat)
+  const autonomy = new AutonomyManager(
+    config,
+    llm,
+    shortTermMemory,
+    longTermMemory,
+    helix,
+    () => commandHandler.isBusy()
+  );
+  autonomy.start();
+
   // Setup EventSub WebSocket (sharing the same HelixClient so token
   // refreshes happen in exactly one place)
   const websocket = new EventSubWebSocket(broadcasterTokens, helix);
@@ -165,7 +182,7 @@ async function main(): Promise<void> {
   });
 
   // Setup graceful shutdown
-  setupGracefulShutdown(commandHandler, websocket);
+  setupGracefulShutdown(commandHandler, websocket, autonomy);
 
   // Connect
   await websocket.connect();

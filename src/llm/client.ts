@@ -139,11 +139,15 @@ export class LLMClient {
     return null;
   }
 
-  async agenticToolCompletion(messages: ChatMessage[], tools: ToolDefinition[]): Promise<{ content: string | null; tool_calls: ToolCall[] | null } | null> {
+  async agenticToolCompletion(
+    messages: ChatMessage[],
+    tools: ToolDefinition[],
+    temperature = 0.3
+  ): Promise<{ content: string | null; tool_calls: ToolCall[] | null } | null> {
     const request: ChatCompletionRequest = {
       model: this.config.model,
       messages,
-      temperature: 0.3,
+      temperature,
       max_tokens: 1000,
       tools,
       tool_choice: 'auto',

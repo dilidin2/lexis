@@ -7,6 +7,7 @@ import { HelixClient } from '../twitch/helix';
 import { ChatMessageEvent } from '../twitch/websocket';
 import { logger, MemoryFileStats } from '../logger';
 import { RollingWindowRateLimiter } from '../rateLimiter';
+import { cleanResponse } from '../utils/response';
 
 interface QueuedCommand {
   event: ChatMessageEvent;
@@ -58,6 +59,14 @@ export class CommandHandler {
     const prefix = config.bot.commandPrefix.replace(/^[!\/]/, '');
     this.commandPattern = new RegExp(`^[!/]${prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s+(.+)$`, 'i');
     logger.info(`Command pattern: ${this.commandPattern}`);
+  }
+
+  /**
+   * True while the handler is processing a command or consolidating memory.
+   * Used by the autonomy manager to avoid concurrent LLM/sends.
+   */
+  isBusy(): boolean {
+    return this.isProcessing || this.isConsolidating;
   }
 
   handleEvent(event: ChatMessageEvent): void {
@@ -268,31 +277,7 @@ export class CommandHandler {
   }
 
   private processResponse(raw: string): string {
-    // Remove markdown formatting
-    let response = raw
-      .replace(/\*\*(.*?)\*\*/g, '$1')
-      .replace(/\*(.*?)\*/g, '$1')
-      .replace(/`(.*?)`/g, '$1')
-      .replace(/~~(.*?)~~/g, '$1')
-      .replace(/#{1,6}\s/g, '')
-      .replace(/\n+/g, ' ')
-      .trim();
-
-    // Truncate if needed
-    const maxLength = this.config.bot.maxResponseLength;
-    if (response.length > maxLength) {
-      const originalLength = response.length;
-      response = response.substring(0, maxLength);
-      // Don't end mid-word
-      const lastSpace = response.lastIndexOf(' ');
-      if (lastSpace > maxLength * 0.7) {
-        response = response.substring(0, lastSpace);
-      }
-      response = response.trim() + '...';
-      logger.responseTruncated(originalLength, response.length, `exceeded ${maxLength} char limit`);
-    }
-
-    return response;
+    return cleanResponse(raw, this.config.bot.maxResponseLength);
   }
 
   private async runConsolidation(): Promise<void> {

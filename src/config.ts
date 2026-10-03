@@ -16,6 +16,15 @@ export interface LLMConfig {
   timeout: number;
 }
 
+export interface AutonomyConfig {
+  enabled: boolean;
+  intervalMs: number;
+  cooldownMs: number;
+  minRecentEntries: number;
+  recentContextEntries: number;
+  maxResponseLength: number;
+}
+
 export interface BotConfig {
   commandPrefix: string;
   maxResponseLength: number;
@@ -26,6 +35,7 @@ export interface BotConfig {
   shortTermMemorySize: number;
   longTermMemoryInterval: number;
   systemPromptFile: string;
+  autonomy: AutonomyConfig;
 }
 
 export interface Config {
@@ -70,6 +80,14 @@ export function loadConfig(): Config {
       shortTermMemorySize: fileConfig.bot?.shortTermMemorySize ?? 20,
       longTermMemoryInterval: fileConfig.bot?.longTermMemoryInterval ?? 50,
       systemPromptFile: process.env.SYSTEM_PROMPT_FILE ?? fileConfig.bot?.systemPromptFile ?? 'friendly',
+      autonomy: {
+        enabled: fileConfig.bot?.autonomy?.enabled ?? false,
+        intervalMs: fileConfig.bot?.autonomy?.intervalMs ?? 120000,
+        cooldownMs: fileConfig.bot?.autonomy?.cooldownMs ?? 300000,
+        minRecentEntries: fileConfig.bot?.autonomy?.minRecentEntries ?? 2,
+        recentContextEntries: fileConfig.bot?.autonomy?.recentContextEntries ?? 8,
+        maxResponseLength: fileConfig.bot?.autonomy?.maxResponseLength ?? 250,
+      },
     },
   };
 }
