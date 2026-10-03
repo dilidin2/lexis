@@ -37,21 +37,33 @@ const AUTONOMY_QUESTION =
   '[Internal check-in] Do you want to add something to the conversation? ' +
   'If yes, call the respond_in_chat tool with your message. If no, do not call any tool.';
 
-const AUTONOMY_RULES = [
-  '=== AUTONOMY RULES ===',
-  'You are checking in on the chat on your own initiative, not because a user asked you.',
-  'You MAY add a spontaneous message if there is something genuinely worth contributing:',
-  'a natural reaction, a useful piece of information, a witty comment, or picking up on',
-  'something the users were talking about.',
-  'Rules:',
-  '- Silence is usually the right answer. Do not speak just to be heard.',
-  '- Do not repeat things that were already said in the conversation.',
-  '- Do not start a brand new topic out of nowhere; react to what is already happening.',
-  '- Do not address a specific user with @username; you are not replying to anyone.',
-  '- Never prefix your message with "Lexis:" — that prefix is only used in the history.',
-  '- Keep it short and in plain text, no markdown.',
-  '=== END AUTONOMY RULES ===',
-].join('\n');
+function buildAutonomyRules(maxResponseLength: number): string {
+  return [
+    '=== AUTONOMY RULES ===',
+    'You are checking in on the chat on your own initiative, not because a user asked you.',
+    'Think of yourself as a real person in the chat who decides to jump in.',
+    '',
+    'You SHOULD add a short message when:',
+    '- A user just said something that deserves a reaction (agree, disagree, joke, add info).',
+    '- The chat is discussing a topic you can naturally contribute to.',
+    '- The conversation is slowing down and you can revive it.',
+    '',
+    'You MUST stay silent when:',
+    '- You already commented on this exact topic. Check the history, including your own',
+    '  spontaneous messages (marked "lexis: (spontaneous)"). If nothing new happened since',
+    '  your last message on the topic, say nothing — do not answer the same person twice',
+    '  on the same topic.',
+    '- The conversation is already flowing well without you.',
+    '',
+    'Language: always write in the same language the chat is currently using. If the chat',
+    'is in Italian, write in Italian; if in English, write in English. Match the chat\'s tone.',
+    '',
+    'Format: short (under ' + maxResponseLength + ' characters), plain text, no markdown, no',
+    '@username, and never start your message with "Lexis:" (that prefix only appears in',
+    'the history).',
+    '=== END AUTONOMY RULES ===',
+  ].join('\n');
+}
 
 export class AutonomyManager {
   private config: Config;
@@ -116,7 +128,7 @@ export class AutonomyManager {
     }
 
     parts.push('');
-    parts.push(AUTONOMY_RULES);
+    parts.push(buildAutonomyRules(this.config.bot.autonomy.maxResponseLength));
 
     return parts.join('\n');
   }

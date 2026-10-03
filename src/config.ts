@@ -84,7 +84,7 @@ export function loadConfig(): Config {
         enabled: fileConfig.bot?.autonomy?.enabled ?? false,
         intervalMs: fileConfig.bot?.autonomy?.intervalMs ?? 120000,
         cooldownMs: fileConfig.bot?.autonomy?.cooldownMs ?? 300000,
-        minRecentEntries: fileConfig.bot?.autonomy?.minRecentEntries ?? 2,
+        minRecentEntries: fileConfig.bot?.autonomy?.minRecentEntries ?? 1,
         recentContextEntries: fileConfig.bot?.autonomy?.recentContextEntries ?? 8,
         maxResponseLength: fileConfig.bot?.autonomy?.maxResponseLength ?? 250,
       },

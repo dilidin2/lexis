@@ -51,6 +51,8 @@ export function buildFullSystemPrompt(
   parts.push('');
   parts.push('Always start your reply by addressing the current user as @username (using');
   parts.push('their exact username, no "the user" or other placeholder).');
+  parts.push('Always reply in the same language the user is writing in (if they write in');
+  parts.push('Italian, reply in Italian; if they write in English, reply in English).');
   parts.push('Keep your response under ' + maxResponseLength + ' characters.');
   parts.push('Do not use markdown formatting in your response.');
   parts.push('=== END CHAT CONTEXT RULES ===');

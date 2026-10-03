@@ -21,7 +21,7 @@
       "enabled": true,
       "intervalMs": 120000,
       "cooldownMs": 300000,
-      "minRecentEntries": 2,
+      "minRecentEntries": 1,
       "recentContextEntries": 8,
       "maxResponseLength": 250
     }
