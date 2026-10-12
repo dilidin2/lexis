@@ -178,11 +178,15 @@ export class EventSubWebSocket {
       return;
     }
 
-    // Filter out bot's own messages
+    // Filter out bot's own messages (only when the bot is a separate
+    // account; in broadcaster mode the bot IS the broadcaster, so its
+    // own ID must not be filtered out)
     const botUserId = this.helix.getBotUserId();
-    if (event.chatter_user_id === botUserId) {
+    if (botUserId !== this.broadcasterUserId && event.chatter_user_id === botUserId) {
       return;
     }
+
+    console.log(`[CHAT] ${event.chatter_user_login}: ${event.message.text}`);
 
     this.onMessageCallback(event);
   }
