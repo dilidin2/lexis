@@ -1,0 +1,29 @@
+{
+  "llm": {
+    "baseUrl": "http://localhost:11434",
+    "apiKey": "sk-example-key",
+    "model": "mistral",
+    "temperature": 0.5,
+    "maxTokens": 16384,
+    "timeout": 60000
+  },
+  "bot": {
+    "commandPrefix": "!lexi",
+    "maxResponseLength": 500,
+    "rateLimitMs": 1000,
+    "userCooldownMs": 30000,
+    "maxRequestsPerWindow": 10,
+    "windowMs": 120000,
+    "shortTermMemorySize": 15,
+    "longTermMemoryInterval": 25,
+    "systemPromptFile": "default",
+    "autonomy": {
+      "enabled": false,
+      "intervalMs": 300000,
+      "cooldownMs": 600000,
+      "minRecentEntries": 3,
+      "recentContextEntries": 12,
+      "maxResponseLength": 300
+    }
+  }
+}
