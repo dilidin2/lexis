@@ -142,17 +142,21 @@ export class LLMClient {
   async agenticToolCompletion(
     messages: ChatMessage[],
     tools: ToolDefinition[],
-    temperature = 0.3
+    temperature = 0.3,
+    maxTokens = 1000
   ): Promise<{ content: string | null; tool_calls: ToolCall[] | null } | null> {
     const request: ChatCompletionRequest = {
       model: this.config.model,
       messages,
       temperature,
-      max_tokens: 1000,
+      max_tokens: maxTokens,
       tools,
       tool_choice: 'auto',
     };
 
+    const MAX_ATTEMPTS = 2;
+
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 60000);
 
@@ -171,6 +175,14 @@ export class LLMClient {
 
       if (!response.ok) {
         const body = await response.text();
+        // llama.cpp fails to parse tool-call JSON if the model emits a lone
+        // UTF-16 surrogate (common with emojis). Retry: the next sampling
+        // almost always produces valid JSON.
+        if (response.status === 400 && body.includes('surrogate') && attempt < MAX_ATTEMPTS - 1) {
+          logger.warn('LLM emitted invalid surrogate in tool call JSON, retrying...');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          continue;
+        }
         logger.error(`LLM agentic tool request failed: HTTP ${response.status} - ${body.substring(0, 200)}`);
         return null;
       }
@@ -196,8 +208,13 @@ export class LLMClient {
       } else {
         logger.error(`LLM agentic tool request failed: ${error.message}`);
       }
+      if (attempt < MAX_ATTEMPTS - 1) continue;
       return null;
     }
+    }
+
+    logger.error('LLM agentic tool request failed after retries');
+    return null;
   }
 
 }

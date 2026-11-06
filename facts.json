@@ -1,0 +1,257 @@
+{
+  "facts": [
+    {
+      "id": 1,
+      "subject": "mister7porta",
+      "fact": "mister7porta: wants everyone except himself to be called \"Ciotti\".",
+      "updatedAt": 1792191391174
+    },
+    {
+      "id": 2,
+      "subject": "mister7porta",
+      "fact": "mister7porta: Requested to speak in a version of Florentine where 'c' is replaced by 'h'.",
+      "updatedAt": 1792773727704
+    },
+    {
+      "id": 3,
+      "subject": "mister7porta",
+      "fact": "Asked about the history of the Sardine movement and the \"Tardis Re Tardis\" party",
+      "updatedAt": 0
+    },
+    {
+      "id": 4,
+      "subject": "mister7porta",
+      "fact": "Recurring joke: eating a banana picked from the street for 100 euros",
+      "updatedAt": 0
+    },
+    {
+      "id": 5,
+      "subject": "mister7porta",
+      "fact": "mister7porta: Interested in Her's, dream pop/shoegaze, zombie apocalypse survival, history of the Sardine movement, Overwatch roles, and his grandfather is a philosopher.",
+      "updatedAt": 1793208736713
+    },
+    {
+      "id": 6,
+      "subject": "mister7porta",
+      "fact": "Asked about chess Battle Royale and chess rules (e.g. en passant)",
+      "updatedAt": 0
+    },
+    {
+      "id": 7,
+      "subject": "mister7porta",
+      "fact": "mister7porta: identifies with the \"Chill Guy\" meme and considers himself Kit Kat, associated with a flag-raising joke.",
+      "updatedAt": 1792790528923
+    },
+    {
+      "id": 8,
+      "subject": "mister7porta",
+      "fact": "Asked about the possibility of Alessia dating Dilo",
+      "updatedAt": 0
+    },
+    {
+      "id": 9,
+      "subject": "mister7porta",
+      "fact": "Running joke about extreme frustration in chess: \"gas nervino\", \"scacciaviti arruginito\", \"ciola\" (used as a weapon for \"scacco matto\")",
+      "updatedAt": 0
+    },
+    {
+      "id": 10,
+      "subject": "gmiulia",
+      "fact": "Learning Italian/Neapolitan words and spelling; interested in Italian phonetics (e.g. \"iato\")",
+      "updatedAt": 0
+    },
+    {
+      "id": 11,
+      "subject": "gmiulia",
+      "fact": "Enjoys stories (fables, novellas), geography, and general knowledge quizzes (asked for an 8-year-old geography quiz)",
+      "updatedAt": 0
+    },
+    {
+      "id": 12,
+      "subject": "gmiulia",
+      "fact": "Values comfort (mentioned putting on pajamas)",
+      "updatedAt": 0
+    },
+    {
+      "id": 13,
+      "subject": "gmiulia",
+      "fact": "Interested in GPS and GIS technology and digital cartography",
+      "updatedAt": 0
+    },
+    {
+      "id": 14,
+      "subject": "gmiulia",
+      "fact": "Taught Lexis the slang term \"uallera\"",
+      "updatedAt": 0
+    },
+    {
+      "id": 15,
+      "subject": "gmiulia",
+      "fact": "gmiulia: Likes Alessandro, Alex the Romanian, Rafael, Giovanni, and Niccolò.",
+      "updatedAt": 1792192806805
+    },
+    {
+      "id": 16,
+      "subject": "gmiulia",
+      "fact": "Asked for an explanation of chemical bonds",
+      "updatedAt": 0
+    },
+    {
+      "id": 17,
+      "subject": "mister7porta",
+      "fact": "Interested in the \"Chill Guy\" meme and its potential as a festival theme.",
+      "updatedAt": 1792171731783
+    },
+    {
+      "id": 18,
+      "subject": "channel",
+      "fact": "The channel enjoys solving complex and humorous crosswords together, often involving food and geography.",
+      "updatedAt": 1792174535793
+    },
+    {
+      "id": 19,
+      "subject": "mister7porta",
+      "fact": "mister7porta: Interested in zombie apocalypse survival, scoliosis, drama of mother's name, coffee to stay awake, and camouflage.",
+      "updatedAt": 1792783931668
+    },
+    {
+      "id": 20,
+      "subject": "mister7porta",
+      "fact": "mister7porta: Interested in zombie apocalypse survival strategies and creating a species of humans made of meringues.",
+      "updatedAt": 1792182243561
+    },
+    {
+      "id": 21,
+      "subject": "gmiulia",
+      "fact": "gmiulia: Interested in Minecraft mechanics, specifically enchanting and Nether portals.",
+      "updatedAt": 1792184408171
+    },
+    {
+      "id": 22,
+      "subject": "uomopuzzo",
+      "fact": "uomopuzzo: identifies as gay.",
+      "updatedAt": 1792184716453
+    },
+    {
+      "id": 23,
+      "subject": "uomopuzzo",
+      "fact": "uomopuzzo: loves bananas.",
+      "updatedAt": 1792184716453
+    },
+    {
+      "id": 24,
+      "subject": "gmiulia",
+      "fact": "gmiulia: Eats granita on Thursdays and Saturdays.",
+      "updatedAt": 1792184944593
+    },
+    {
+      "id": 26,
+      "subject": "uomopuzzo",
+      "fact": "uomopuzzo: Identifies as a fishing boat (peschereccio).",
+      "updatedAt": 1792185340262
+    },
+    {
+      "id": 27,
+      "subject": "gmiulia",
+      "fact": "gmiulia: The mother of Matteo makes bokk.",
+      "updatedAt": 1792185340262
+    },
+    {
+      "id": 28,
+      "subject": "uomopuzzo",
+      "fact": "uomopuzzo: I calabroni sono calabresi.",
+      "updatedAt": 1792186142322
+    },
+    {
+      "id": 29,
+      "subject": "gmiulia",
+      "fact": "mister7porta: Requested that Lexis only respond to gmiulia in Neapolitan.",
+      "updatedAt": 1792192048569
+    },
+    {
+      "id": 30,
+      "subject": "Matteo",
+      "fact": "Matteo had a birthday recently.",
+      "updatedAt": 1792258503175
+    },
+    {
+      "id": 31,
+      "subject": "Dili",
+      "fact": "Dili is gay.",
+      "updatedAt": 1792603221447
+    },
+    {
+      "id": 32,
+      "subject": "gmiulia",
+      "fact": "gmiulia: gmiulia: enjoys playing Marvel Snap and Dark Souls 3.",
+      "updatedAt": 1792275774229
+    },
+    {
+      "id": 33,
+      "subject": "rd_red_diamond",
+      "fact": "rd_red_diamond: rd_red_diamond: struggles with the difficulty of Dark Souls 3.",
+      "updatedAt": 1792275774230
+    },
+    {
+      "id": 34,
+      "subject": "jenrofrr",
+      "fact": "jenrofrr recently left their job at a call center.",
+      "updatedAt": 1792601313640
+    },
+    {
+      "id": 35,
+      "subject": "jenrofrr",
+      "fact": "jenrofrr is French and wants Lexis to respond only in French.",
+      "updatedAt": 1792601721887
+    },
+    {
+      "id": 36,
+      "subject": "kanyewestah",
+      "fact": "kanyewestah traveled to Fano.",
+      "updatedAt": 1792621353577
+    },
+    {
+      "id": 37,
+      "subject": "kanyewestah",
+      "fact": "kanyewestah is interested in French travel.",
+      "updatedAt": 1792621353577
+    },
+    {
+      "id": 38,
+      "subject": "er_pupone_francesco",
+      "fact": "er_pupone_francesco has issues with his mouse.",
+      "updatedAt": 1792621353577
+    },
+    {
+      "id": 39,
+      "subject": "general",
+      "fact": "mister7porta: joked about Napoleon being a squid.",
+      "updatedAt": 1792698213220
+    },
+    {
+      "id": 40,
+      "subject": "Dili",
+      "fact": "Dili likes pistachio tortina.",
+      "updatedAt": 1792707536617
+    },
+    {
+      "id": 41,
+      "subject": "kanyewestah",
+      "fact": "kanyewestah believes going for a run is the best way to break a doomscrolling cycle.",
+      "updatedAt": 1792707536617
+    },
+    {
+      "id": 42,
+      "subject": "uomopuzzo",
+      "fact": "uomopuzzo: uomopuzzo: has watched 6k anime.",
+      "updatedAt": 1793385736728
+    },
+    {
+      "id": 43,
+      "subject": "Dili",
+      "fact": "Dili is a regular in the lobby and is often involved in chess discussions.",
+      "updatedAt": 1793823011287
+    }
+  ],
+  "nextId": 44
+}

@@ -9,6 +9,7 @@ import { ShortTermMemory } from './memory/shortTerm';
 import { LongTermMemory } from './memory/longTerm';
 import { CommandHandler } from './handlers/command';
 import { AutonomyManager } from './autonomy/autonomy';
+import { ChatActivityBuffer } from './autonomy/chatActivity';
 
 interface ParsedArgs {
   bot: boolean;
@@ -163,6 +164,10 @@ async function main(): Promise<void> {
   const helix = new HelixClient(broadcasterTokens, botTokens);
   const commandHandler = new CommandHandler(config, llm, shortTermMemory, longTermMemory, helix);
 
+  // Rolling buffer of live chat messages (all of them, not just the ones
+  // the bot answered) so autonomy can react to the current conversation.
+  const chatActivity = new ChatActivityBuffer();
+
   // Setup autonomy (periodic self-initiated participation in chat)
   const autonomy = new AutonomyManager(
     config,
@@ -170,6 +175,7 @@ async function main(): Promise<void> {
     shortTermMemory,
     longTermMemory,
     helix,
+    chatActivity,
     () => commandHandler.isBusy()
   );
   autonomy.start();
@@ -178,6 +184,7 @@ async function main(): Promise<void> {
   // refreshes happen in exactly one place)
   const websocket = new EventSubWebSocket(broadcasterTokens, helix);
   websocket.setOnMessageCallback((event) => {
+    chatActivity.add(event.chatter_user_login, event.message.text);
     commandHandler.handleEvent(event);
   });
 

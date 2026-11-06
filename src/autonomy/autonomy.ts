@@ -3,6 +3,7 @@ import { LLMClient, ChatMessage, ToolDefinition } from '../llm/client';
 import { ShortTermMemory } from '../memory/shortTerm';
 import { LongTermMemory } from '../memory/longTerm';
 import { HelixClient } from '../twitch/helix';
+import { ChatActivityBuffer } from './chatActivity';
 import { loadSystemPrompt } from '../prompts/loader';
 import { cleanResponse } from '../utils/response';
 import { logger } from '../logger';
@@ -48,6 +49,10 @@ function buildAutonomyRules(maxResponseLength: number): string {
     '- The chat is discussing a topic you can naturally contribute to.',
     '- The conversation is slowing down and you can revive it.',
     '',
+    'The "CURRENT CHAT" block shows what people are saying RIGHT NOW. React to that,',
+    'not to the older conversation history above it. The history is only there so you',
+    'do not repeat yourself; the live topic is what is happening in CURRENT CHAT.',
+    '',
     'You MUST stay silent when:',
     '- You already commented on this exact topic. Check the history, including your own',
     '  spontaneous messages (marked "lexis: (spontaneous)"). If nothing new happened since',
@@ -71,6 +76,7 @@ export class AutonomyManager {
   private shortTermMemory: ShortTermMemory;
   private longTermMemory: LongTermMemory;
   private helix: HelixClient;
+  private chatActivity: ChatActivityBuffer;
   private isBusy: () => boolean;
   private personalityPrompt: string;
   private timer: NodeJS.Timeout | null = null;
@@ -83,6 +89,7 @@ export class AutonomyManager {
     shortTermMemory: ShortTermMemory,
     longTermMemory: LongTermMemory,
     helix: HelixClient,
+    chatActivity: ChatActivityBuffer,
     isBusy: () => boolean
   ) {
     this.config = config;
@@ -90,6 +97,7 @@ export class AutonomyManager {
     this.shortTermMemory = shortTermMemory;
     this.longTermMemory = longTermMemory;
     this.helix = helix;
+    this.chatActivity = chatActivity;
     this.isBusy = isBusy;
     this.personalityPrompt = loadSystemPrompt(config.bot.systemPromptFile);
   }
@@ -158,6 +166,18 @@ export class AutonomyManager {
         messages.push({ role: 'user', content: `${entry.username}: ${entry.userMessage}` });
         messages.push({ role: 'assistant', content: entry.botResponse });
       }
+
+      // The Q&A history above ends on the bot's last (stale) reply. Append the
+      // live chat so the model can see what is being said RIGHT NOW instead of
+      // defaulting to the most recent topic in the history.
+      const activity = this.chatActivity.formatRecent();
+      if (activity.trim()) {
+        messages.push({
+          role: 'user',
+          content: '=== CURRENT CHAT (what people are saying right now) ===\n' + activity + '\n=== END CURRENT CHAT ===',
+        });
+      }
+
       messages.push({ role: 'user', content: AUTONOMY_QUESTION });
 
       const result = await this.llm.agenticToolCompletion(messages, [RESPOND_TOOL], 0.8);
